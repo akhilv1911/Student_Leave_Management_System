@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - SLMS</title>
+    <!-- PROFESSIONAL STYLING LINK -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Chart.js Library for Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+</head>
+<body class="bg-light-gray text-gray-800">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-dark shadow-md">
+        <div class="container max-w-7xl">
+            <a class="navbar-brand font-bold" href="{{ url_for('student_dashboard') }}"><i class="fas fa-clipboard-check me-2"></i>SLMS | Student Portal</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#viewRequestsModal">History</a></li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <button class="btn btn-sm btn-outline-light rounded-pill px-3 me-2" data-bs-toggle="modal" data-bs-target="#profileModal">
+                            <i class="fas fa-user-edit me-1"></i> Update Profile
+                        </button>
+                    </li>
+                    <li class="nav-item"><a class="btn btn-sm btn-outline-light rounded-pill px-3" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container dashboard-container max-w-7xl">
+        <h1 class="text-center mb-2 text-primary-dark">Welcome, {{ user.first_name }}!</h1>
+        <p class="text-center text-secondary-dark">College ID: {{ user.college_id }} | Branch: {{ user.branch }}</p>
+        
+        <!-- Flash Messages (Alerts) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Leave Balance and Stats Cards -->
+        <div class="row justify-content-center my-4">
+            
+            <!-- Quick Stats Module (FIXED TEXT COLOR) -->
+            <div class="col-md-4 mb-3">
+                <div class="card p-3 shadow-md border-top-primary">
+                    <h5 class="card-title mb-0 text-primary-dark"><i class="fas fa-history me-2"></i> Requests Processed</h5>
+                    <div class="mt-2 text-center">
+                        <span class="text-3xl font-bold text-success">{{ summary.approved }}</span> / 
+                        <span class="text-3xl font-bold text-info">{{ summary.pending }}</span> / 
+                        <span class="text-3xl font-bold text-danger">{{ summary.rejected }}</span>
+                    </div>
+                    <!-- Added text-gray-700 to ensure labels are visible -->
+                    <p class="small mt-1 d-flex justify-content-between text-gray-700"> 
+                        <span>Approved</span> <span>Pending</span> <span>Rejected</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Normal Leave Balance -->
+            <div class="col-md-4 mb-3">
+                <div class="card p-3 shadow-md border-top-primary">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-calendar-alt fa-2x text-primary-dark me-3"></i>
+                        <div>
+                            <h5 class="card-title mb-0">Normal Leave Balance</h5>
+                            <p class="text-muted mb-0 small">Monthly Limit: 4 Days</p>
+                        </div>
+                        <h4 class="ms-auto fw-bold text-primary-dark">{{ balance.normal_balance }} <small class="text-muted small">Days Left</small></h4>
+                    </div>
+                </div>
+            </div>
+            <!-- Medical Leave Balance -->
+            <div class="col-md-4 mb-3">
+                <div class="card p-3 shadow-md border-top-info">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-hospital fa-2x text-info-dark me-3"></i>
+                        <div>
+                            <h5 class="card-title mb-0">Medical Leave Balance</h5>
+                            <p class="text-muted mb-0 small">Annual Limit: 20 Days</p>
+                        </div>
+                        <h4 class="ms-auto fw-bold text-info-dark">{{ balance.medical_balance }} <small class="text-muted small">Days Left</small></h4>
+                    </div>
+                </div>
+            </div>
+            
+             <!-- Request Success Rate Visualization -->
+            <div class="col-md-4 mb-3">
+                <div class="card p-3 shadow-md border-top-secondary">
+                    <h5 class="card-title mb-3 text-center text-secondary-dark font-semibold">Request Success Rate</h5>
+                    <div class="chart-container h-40 text-gray-700">
+                        <canvas id="requestStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance Scorecard Module -->
+        <div class="row justify-content-center my-4">
+            <div class="col-md-12">
+                <div class="card p-4 shadow-lg border-top-{{ compliance[2] }} bg-{{ compliance[2] }}-100">
+                    <h4 class="font-bold text-lg text-{{ compliance[2] }}-800">
+                        <i class="fas fa-exclamation-triangle me-2"></i> My Compliance Scorecard: {{ compliance[0] }}
+                    </h4>
+                    <p class="text-sm text-{{ compliance[2] }}-700 mt-2">
+                        {{ compliance[1] }} (Current Attendance: {{ user.attendance_percentage | round(1) }}%)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Apply Leave Button -->
+        <div class="d-flex justify-content-center mt-4 mb-5">
+            <button class="btn btn-primary btn-lg rounded-pill shadow-lg" data-bs-toggle="modal" data-bs-target="#applyLeaveModal">
+                <i class="fas fa-plus-circle me-2"></i> Apply for Leave
+            </button>
+        </div>
+
+        <!-- Request History Table -->
+        <h3 class="mt-4 mb-3 text-secondary-dark">My Leave Requests</h3>
+        <div class="card p-3">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Type</th>
+                            <th>Reason</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Applied On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in leave_requests %}
+                        <tr>
+                            <td><span class="badge bg-secondary">{{ req.leave_type }}</span></td>
+                            <td>{{ req.reason }}</td>
+                            <td>{{ req.start_date }}</td>
+                            <td>{{ req.end_date }}</td>
+                            <td>
+                                {% if req.status == 'Pending' %}
+                                    <span class="badge bg-warning text-dark">{{ req.status }}</span>
+                                {% elif req.status == 'Forwarded' %}
+                                    <span class="badge bg-info text-dark">{{ req.status }}</span>
+                                {% elif req.status == 'Approved' %}
+                                    <span class="badge bg-success">{{ req.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ req.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ req.created_at }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No leave requests found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apply Leave Modal -->
+    <div class="modal fade" id="applyLeaveModal" tabindex="-1" aria-labelledby="applyLeaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow-lg">
+                <div class="modal-header bg-primary text-white rounded-top-4">
+                    <h5 class="modal-title" id="applyLeaveModalLabel"><i class="fas fa-paper-plane me-2"></i> Submit New Leave Request</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- CRUCIAL: Form requires enctype="multipart/form-data" for file upload -->
+                    <form action="{{ url_for('student_dashboard') }}" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="leave_type" class="form-label fw-semibold">Leave Type</label>
+                            <select class="form-select rounded-3" id="leave_type" name="leave_type" required onchange="toggleFileUpload()">
+                                <option value="" selected disabled>Select Leave Type</option>
+                                <option value="Normal">Normal Leave (4 Days/Month Limit)</option>
+                                <option value="Medical">Medical Leave (20 Days/Year Limit)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reason" class="form-label fw-semibold">Reason for Leave</label>
+                            <textarea class="form-control rounded-3" id="reason" name="reason" rows="3" required placeholder="E.g., Family event, illness, personal work..."></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label fw-semibold">Start Date</label>
+                                <input type="date" class="form-control rounded-3" id="start_date" name="start_date" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="end_date" class="form-label fw-semibold">End Date</label>
+                                <input type="date" class="form-control rounded-3" id="end_date" name="end_date" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Mandatory File Upload Section (Hidden/Shown by JavaScript) -->
+                        <div class="mb-3" id="medical_cert_group" style="display: none;">
+                            <label for="medical_cert" class="form-label text-danger fw-semibold">
+                                <i class="fas fa-upload me-1"></i> Mandatory: Upload Medical Certificate
+                            </label>
+                            <input class="form-control rounded-3" type="file" id="medical_cert" name="medical_cert" accept=".pdf, .jpg, .jpeg, .png">
+                            <div class="form-text text-muted">PDF, JPG, JPEG, or PNG formats only.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="salutation" class="form-label fw-semibold">Closing Salutation</label>
+                            <input type="text" class="form-control rounded-3" id="salutation" name="salutation" required placeholder="E.g., Thank you for your consideration">
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 rounded-pill shadow-sm"><i class="fas fa-check me-2"></i> Submit Request</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Module Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow-lg">
+                <div class="modal-header bg-secondary-dark text-white rounded-top-4">
+                    <h5 class="modal-title" id="profileModalLabel"><i class="fas fa-user-cog me-2"></i> Update Personal Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('update_profile') }}" method="post">
+                        <div class="mb-3">
+                            <label for="profile_first_name" class="form-label fw-semibold">First Name</label>
+                            <input type="text" class="form-control rounded-3" id="profile_first_name" name="first_name" value="{{ user.first_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="profile_second_name" class="form-label fw-semibold">Second Name</label>
+                            <input type="text" class="form-control rounded-3" id="profile_second_name" name="second_name" value="{{ user.second_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="profile_email" class="form-label fw-semibold">Email</label>
+                            <input type="email" class="form-control rounded-3" id="profile_email" name="email" value="{{ user.email }}" required>
+                            <div class="form-text text-muted">Changing your email requires logging in again.</div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="profile_college_id" class="form-label fw-semibold">College ID (Cannot Change)</label>
+                            <input type="text" class="form-control rounded-3 bg-gray-100" id="profile_college_id" value="{{ user.college_id }}" disabled>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm"><i class="fas fa-save me-2"></i> Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JavaScript to toggle file upload and Chart.js initialization -->
+    <script>
+        // 1. File Upload Toggler
+        function toggleFileUpload() {
+            const leaveType = document.getElementById('leave_type').value;
+            const certGroup = document.getElementById('medical_cert_group');
+            const certInput = document.getElementById('medical_cert');
+
+            if (leaveType === 'Medical') {
+                certGroup.style.display = 'block';
+                certInput.setAttribute('required', 'required'); 
+            } else {
+                certGroup.style.display = 'none';
+                certInput.removeAttribute('required');
+            }
+        }
+        
+        // 2. Chart.js Initialization (Fixed Syntax Error)
+        document.addEventListener('DOMContentLoaded', function() {
+            // CRITICAL FIX: Ensure Jinja variables are correctly embedded as numeric values.
+            const summaryData = {
+                approved: JSON.parse("{{ summary.approved | default(0) }}"),
+                rejected: JSON.parse("{{ summary.rejected | default(0) }}"),
+                pending: JSON.parse("{{ summary.pending | default(0) }}")
+            };
+            
+            const total = summaryData.approved + summaryData.rejected + summaryData.pending;
+
+            if (total > 0) {
+                const ctx = document.getElementById('requestStatusChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Approved', 'Rejected', 'Pending'],
+                        datasets: [{
+                            data: [summaryData.approved, summaryData.rejected, summaryData.pending],
+                            backgroundColor: ['#28a745', '#dc3545', '#ffc107'], // Green, Red, Yellow
+                            borderColor: '#fff',
+                            borderWidth: 2,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' },
+                            title: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        return tooltipItems[0].label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

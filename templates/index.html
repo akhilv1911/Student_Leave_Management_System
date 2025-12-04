@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLMS: Policy-Driven Leave Management</title>
+    <!-- Links to the professional external CSS file for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Custom Tailwind Configuration (using your colors and fonts) */
+        :root {
+            --primary-dark: #004d99; /* Deep Professional Blue */
+            --primary-light: #007bff;
+            --secondary-dark: #343a40; /* Slate Gray */
+        }
+        .bg-primary-dark { background-color: var(--primary-dark) !important; }
+        .text-primary-dark { color: var(--primary-dark) !important; }
+        .border-primary-dark { border-color: var(--primary-dark) !important; }
+        .bg-light-gray { background-color: #f8f9fa; }
+        
+        /* Full-Screen Hero with Background Image */
+        .hero-background {
+            /* Using a high-quality university background placeholder image */
+            background-image: url('/static/images/index\ image.jpg');
+            background-size: cover;
+            background-position: center;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6); /* Darkens image for better text contrast */
+            z-index: 10;
+        }
+        .hero-content {
+            z-index: 20;
+            color: white;
+            padding: 3rem;
+            max-width: 900px;
+        }
+    </style>
+    <!-- Assuming styles.css is loaded via Flask for full application consistency -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-light-gray text-gray-800">
+    
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-dark shadow-lg sticky-top">
+        <div class="container max-w-7xl">
+            <a class="navbar-brand font-bold text-xl" href="{{ url_for('index') }}"><i class="fas fa-clipboard-check me-2"></i>SLMS</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 space-x-2">
+                    <li class="nav-item"><a class="nav-link" href="#system-value">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#compliance">Compliance</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#contactModal">Contact Us</a></li>
+                    <li class="nav-item">
+                        <a class="btn btn-sm btn-outline-light rounded-pill px-3" href="{{ url_for('signup') }}">
+                            <i class="fas fa-user-plus me-1"></i> Sign Up
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-sm bg-white text-primary-dark rounded-pill px-3 font-semibold" href="{{ url_for('login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Log In
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. Hero Section (Dynamic and Attractive) -->
+    <div class="hero-background">
+        <div class="hero-overlay"></div>
+        <div class="container mx-auto p-8 text-center hero-content">
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-4 hero-title-shadow">
+                Policy-Driven Leave Management
+            </h1>
+            <p class="text-xl md:text-3xl mb-10">
+                Securely automate your entire academic workflow, ensuring compliance, accountability, and real-time alerts for all staff and students.
+            </p>
+            <div class="space-x-4">
+                 <a href="{{ url_for('signup') }}" class="btn btn-lg rounded-full shadow-lg py-3 px-8 text-xl transition transform hover:scale-105" style="background-color: #28a745; border-color: #28a745; color: white;">
+                    Start Digitalizing Now <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg rounded-full py-3 px-8 text-xl border-2">
+                    Existing User Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Value Proposition Section -->
+    <section id="system-value" class="py-20 bg-gray-50">
+        <div class="container max-w-7xl mx-auto px-8">
+            <h2 class="text-3xl font-bold text-center mb-12 text-primary-dark">SLMS: Transforming Administration</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature Card 1: Acceleration -->
+                <div class="bg-white p-6 rounded-lg shadow-xl border-b-4 border-teal-500">
+                    <i class="fas fa-tachometer-alt fa-3x text-teal-600 mb-3"></i>
+                    <h3 class="text-xl font-semibold mb-2">Instant Workflow Acceleration</h3>
+                    <p class="text-gray-600">Eliminates physical delays with **Instant Email Alerts** and the **Time-Based Alert System**, ensuring staff process requests within minutes, not days.</p>
+                </div>
+                <!-- Feature Card 2: Compliance -->
+                <div class="bg-white p-6 rounded-lg shadow-xl border-b-4 border-purple-500">
+                    <i class="fas fa-lock fa-3x text-purple-600 mb-3"></i>
+                    <h3 class="text-xl font-semibold mb-2">Policy Compliance Guarantee</h3>
+                    <p class="text-gray-600">Enforces all **Dynamic Leave Limits** ($\mathbf{4}$ days/month) and the **Mandatory Document Upload** gate automatically, eliminating human error.</p>
+                </div>
+                <!-- Feature Card 3: Accountability -->
+                <div class="bg-white p-6 rounded-lg shadow-xl border-b-4 border-orange-500">
+                    <i class="fas fa-users-cog fa-3x text-orange-600 mb-3"></i>
+                    <h3 class="text-xl font-semibold mb-2">Traceable Accountability</h3>
+                    <p class="text-gray-600">Guarantees requests are handled by the correct staff through mandatory **Departmental Linkage** and logging every transaction timestamp.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Compliance Section -->
+    <section id="compliance" class="py-20 bg-gray-100">
+        <div class="container max-w-7xl mx-auto px-8">
+            <h2 class="text-3xl font-bold text-center mb-12 text-primary-dark">Critical Policy & Compliance Gates</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="bg-primary-dark p-8 rounded-xl shadow-2xl text-white">
+                    <h3 class="text-2xl font-bold mb-4">The Student Compliance Checklist</h3>
+                    <ul class="space-y-4 text-lg">
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-300 mt-1"></i>
+                            <p>Final approval requires passing the **$\mathbf{75\%}$ Attendance Gate**.</p>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-300 mt-1"></i>
+                            <p>Live Leave Balance is calculated from approved history (annual and monthly).</p>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-300 mt-1"></i>
+                            <p>**Email Verification** protects your account and our system integrity.</p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="p-8 rounded-xl text-center">
+                    <i class="fas fa-balance-scale fa-5x text-secondary-dark mb-4"></i>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">Ready to Start?</h3>
+                    <p class="mb-5 text-gray-600">Create your account and experience guaranteed compliance today.</p>
+                    <a href="{{ url_for('signup') }}" class="btn bg-primary-dark text-white font-bold rounded-full py-3 px-8 shadow-xl transition transform hover:bg-primary-light">
+                        Register Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Modal -->
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary-dark text-white">
+                    <h5 class="modal-title" id="contactModalLabel">Contact Information</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="font-semibold">Project Lead:</p>
+                    <p>Akhil (Student)</p>
+                    <p class="font-semibold mt-3">Support Email:</p>
+                    <p>akhil.slms.support@university.edu (Simulated)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 py-6 mt-12">
+        <div class="container max-w-7xl mx-auto px-8 text-center md:text-left">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <h4 class="text-white font-bold mb-2">SLMS Project</h4>
+                    <p class="text-sm">Policy-Driven Workflow Automation.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-2">Quick Links</h4>
+                    <ul class="text-sm space-y-1">
+                        <li><a href="{{ url_for('signup') }}" class="hover:text-white transition">Sign Up</a></li>
+                        <li><a href="{{ url_for('login') }}" class="hover:text-white transition">Log In</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-2">Developer</h4>
+                    <p class="text-sm">Developed by Akhil</p>
+                    <p class="text-sm">&copy; 2025 All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

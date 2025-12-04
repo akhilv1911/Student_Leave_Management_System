@@ -1,0 +1,197 @@
+/* -------------------------------------------------------------------------- */
+/* Professional Styles for SLMS Dashboards and Forms                          */
+/* -------------------------------------------------------------------------- */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+:root {
+    --primary-color: #0056b3; /* Deeper Professional Blue */
+    --primary-light: #007bff;
+    --accent-color: #28a745; /* Green for Success/Accept */
+    --secondary-color: #6c757d; 
+    --bg-light: #f8f9fa; /* Light Background */
+    --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-light);
+    color: #343a40;
+    line-height: 1.6;
+}
+
+/* --- Layout and Structure --- */
+.navbar {
+    background-color: var(--primary-color) !important;
+}
+
+.dashboard-container {
+    padding: 3rem 1.5rem;
+}
+
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Form and Login Cards --- */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-card {
+    max-width: 480px;
+    width: 100%;
+    padding: 2.5rem;
+    background: white; /* Ensure card is white for contrast */
+}
+
+.form-control, .btn {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-light);
+    border-color: var(--primary-color);
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+.btn-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.form-box.Register .animation{
+    transform: translateX(120%);
+    transition: .7s ease;
+    opacity: 0;
+    filter:blur(10px);
+}
+.container.active .animation{
+    transform: translateX(0%);
+    opacity: 1;
+    transition-delay: calc(.1s*var(--li));
+    filter:blur(0px);
+}
+/* --- Dashboard Elements --- */
+h1, h3 {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Status Badges */
+.badge {
+    padding: 0.6em 1em;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.badge.bg-warning { background-color: #ffc107; color: #343a40; }
+.badge.bg-info { background-color: #17a2b8; color: #fff; }
+
+/* Leave Balance Cards - More prominent colors */
+.balance-card.normal {
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    color: #006064;
+}
+.balance-card.medical {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    color: #2e7d32;
+}
+
+.balance-card .display-4 {
+    font-size: 2.8rem;
+    font-weight: 700;
+}
+.balance-card h5 {
+    font-weight: 600;
+    color: #5a6268;
+}
+
+/* Tables */
+.table-primary thead th {
+    background-color: var(--primary-light);
+    color: white;
+    font-weight: 600;
+}
+.table-responsive {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+}
+
+/* Attendance Styling */
+.attendance-input-group {
+    max-width: 150px; 
+}
+.text-danger {
+    color: #dc3545 !important;
+}
+.text-success {
+    color: var(--accent-color) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* --- RESPONSIVE DESIGN (Media Queries) ---                                  */
+/* -------------------------------------------------------------------------- */
+
+/* Mobile Devices (Max 768px) */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem 0.5rem;
+    }
+
+    .auth-card {
+        padding: 1.5rem;
+        max-width: 100%; /* Take up more screen space on mobile */
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    /* Shrink table font size and padding */
+    .table {
+        font-size: 0.85rem;
+    }
+    .table > :not(caption) > * > * {
+        padding: 0.5rem 0.5rem;
+    }
+
+    /* Stack balance cards vertically */
+    .balance-summary {
+        flex-direction: column;
+    }
+    .balance-summary .col-md-6 {
+        margin-bottom: 1rem;
+    }
+    
+    /* Center text on mobile navigation */
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+
+    /* Adjust display for actions */
+    .d-flex.attendance-input-group {
+        max-width: none;
+        width: 100%;
+    }
+}
+
+/* Smaller Desktop Screens (Max 1200px) */
+@media (max-width: 1200px) and (min-width: 769px) {
+    .dashboard-container {
+        padding: 2rem;
+    }
+}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard - SLMS</title>
+    <!-- PROFESSIONAL STYLING LINK -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Minimal embedded style to ensure compatibility with Attendance module */
+        .attendance-input-group { max-width: 150px; }
+    </style>
+</head>
+<body class="bg-light-gray text-gray-800">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-dark shadow-md">
+        <div class="container max-w-7xl">
+            <a class="navbar-brand font-bold" href="{{ url_for('faculty_dashboard') }}"><i class="fas fa-clipboard-check me-2"></i>SLMS | Faculty Portal</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('faculty_dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#attendance_section">Attendance</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#leave_review_section">Review Queue</a></li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="btn btn-sm btn-outline-light rounded-pill px-3" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container dashboard-container max-w-7xl">
+        <h1 class="text-center mb-2 text-primary-dark">Faculty Dashboard</h1>
+        <p class="text-center text-secondary-dark">Welcome, {{ user.first_name }}! | Department: {{ user.branch }}</p>
+
+        <!-- Flash Messages for Success/Error -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Action Priority Queue Module -->
+        <h3 class="mt-5 mb-3 text-secondary-dark"><i class="fas fa-exclamation-circle me-2"></i> Action Priority Queue</h3>
+        <p class="text-muted">Students listed below are at risk (attendance below {{ min_attendance }}%) and require immediate attention before any leave is considered.</p>
+        <div class="row mb-5">
+            {% set low_attendance_students = all_students | selectattr('attendance_percentage', 'lt', min_attendance) | list %}
+            {% if low_attendance_students %}
+                {% for student in low_attendance_students %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card p-3 shadow-sm bg-danger-light border-start-3 border-danger">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="font-semibold text-danger mb-0">AT RISK: {{ student.first_name }} {{ student.second_name }}</p>
+                                    <p class="text-sm text-danger-dark mb-0">ID: {{ student.college_id }}</p>
+                                </div>
+                                <h4 class="text-danger fw-bold">{{ student.attendance_percentage | round(1) }}%</h4>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-success bg-success-light border-start-4 border-success">
+                        All students in this department meet the minimum attendance requirement ({{ min_attendance }}%).
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+
+        <!-- ATTENDANCE MANAGEMENT SECTION -->
+        <h3 class="mt-5 mb-3 text-secondary-dark" id="attendance_section"><i class="fas fa-user-check me-2"></i> Attendance Verification & Management</h3>
+        <p class="text-muted">Update the current official attendance percentage for students in your department ({{ user.branch }}). Policy Minimum: <strong>{{ min_attendance }}%</strong></p>
+        <div class="card p-4 mb-5 shadow-lg">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead class="table-info">
+                        <tr>
+                            <th>Student Name</th>
+                            <th>College ID</th>
+                            <th>Current Attendance (%)</th>
+                            <th>Update Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in all_students %}
+                        <tr class="align-middle">
+                            <td>{{ student.first_name }} {{ student.second_name }}</td>
+                            <td>{{ student.college_id }}</td>
+                            <td class="fw-bold {{ 'text-danger' if student.attendance_percentage < min_attendance else 'text-success' }}">
+                                {{ student.attendance_percentage | round(1) }}%
+                            </td>
+                            <td>
+                                <form action="{{ url_for('faculty_dashboard') }}" method="post" class="d-flex attendance-input-group">
+                                    <input type="hidden" name="attendance_id" value="{{ student.id }}">
+                                    <input type="number" step="0.1" min="0" max="100" class="form-control form-control-sm me-2 rounded-3" name="attendance_percentage" placeholder="New %" required>
+                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill">Update</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No students found in this department.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- LEAVE REVIEW SECTION -->
+        <h3 class="mt-5 mb-3 text-secondary-dark" id="leave_review_section"><i class="fas fa-gavel me-2"></i> Leave Requests to Review (Vetted by CR)</h3>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered bg-white rounded-lg shadow-lg overflow-hidden">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Leave Type</th>
+                        <th>Dates</th>
+                        <th>Reason</th>
+                        <th>Current Attendance</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in forwarded_requests %}
+                    {% set student_attendance = req.attendance_percentage | default(0.0) %}
+                    <tr class="align-middle {{ 'table-warning' if req.status == 'Forwarded' else 'table-light' }}">
+                        <td>{{ req.first_name }} {{ req.second_name }} ({{ req.college_id }})</td>
+                        <td><span class="badge bg-secondary">{{ req.leave_type }}</span></td>
+                        <td>{{ req.start_date }} to {{ req.end_date }}</td>
+                        <td>{{ req.reason }}</td>
+                        <td>
+                            <span class="badge rounded-pill {{ 'bg-danger' if student_attendance < min_attendance else 'bg-success' }}">
+                                {{ student_attendance | round(1) }}%
+                            </span>
+                            {% if student_attendance < min_attendance and req.status in ['Pending', 'Forwarded'] %}
+                                <small class="text-danger fw-bold d-block">POLICY FAIL!</small>
+                            {% endif %}
+                        </td>
+                         <td>
+                            <span class="badge bg-secondary text-white">{{ req.status }}</span>
+                        </td>
+                        <td>
+                            {% if req.status in ['Approved', 'Rejected'] %}
+                                <span class="badge {{ 'bg-success' if req.status == 'Approved' else 'bg-danger' }}">{{ req.status }}</span>
+                            {% else %}
+                            <form action="{{ url_for('faculty_dashboard') }}" method="post" class="d-inline">
+                                <input type="hidden" name="leave_id" value="{{ req.id }}">
+                                <button type="submit" name="action" value="accept" class="btn btn-sm btn-success rounded-pill" {% if student_attendance < min_attendance %}disabled title="Attendance too low to approve"{% endif %}><i class="fas fa-check me-1"></i> Accept</button>
+                                <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger rounded-pill ms-1"><i class="fas fa-times me-1"></i> Reject</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No pending leave requests to review in your department.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

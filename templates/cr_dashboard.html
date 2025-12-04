@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CR Dashboard - SLMS</title>
+    <!-- PROFESSIONAL STYLING LINK -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-light-gray text-gray-800">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-dark shadow-md">
+        <div class="container max-w-7xl">
+            <a class="navbar-brand font-bold" href="{{ url_for('cr_dashboard') }}"><i class="fas fa-clipboard-check me-2"></i>SLMS | CR Portal</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('cr_dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">View Leave Requests</a></li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="btn btn-sm btn-outline-light rounded-pill px-3" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container dashboard-container max-w-7xl">
+        <h1 class="text-center mb-2 text-primary-dark">CR Dashboard</h1>
+        <p class="text-center text-secondary-dark">Welcome, {{ user.first_name }}! | Department: {{ user.branch }}</p>
+
+        <!-- Flash Messages for Success/Error -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <h3 class="mt-5 mb-3 text-secondary-dark"><i class="fas fa-inbox me-2"></i> Pending Leave Requests for Vetting</h3>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered bg-white rounded-lg shadow-lg overflow-hidden">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>College ID</th>
+                        <th>Leave Type</th>
+                        <th>Dates</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in pending_requests %}
+                    <tr class="align-middle">
+                        <td>{{ req.first_name }} {{ req.second_name }}</td>
+                        <td>{{ req.college_id }}</td>
+                        <td><span class="badge bg-secondary">{{ req.leave_type }}</span></td>
+                        <td>{{ req.start_date }} to {{ req.end_date }}</td>
+                        <td>{{ req.reason }}</td>
+                        <td>
+                            <span class="badge {{ 'bg-warning text-dark' if req.status == 'Pending' else 'bg-info text-dark' }}">{{ req.status }}</span>
+                        </td>
+                        <td>
+                            {% if req.status == 'Pending' %}
+                                <form action="{{ url_for('cr_dashboard') }}" method="post" class="d-inline">
+                                    <input type="hidden" name="leave_id" value="{{ req.id }}">
+                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill"><i class="fas fa-arrow-right me-1"></i> Forward to Faculty</button>
+                                </form>
+                            {% else %}
+                                <span class="text-muted small">Awaiting Faculty</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No pending leave requests to vet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

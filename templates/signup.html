@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup - SLMS</title>
+    <!-- PROFESSIONAL STYLING LINK -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Custom Styling for the Image Panel */
+        .promo-panel {
+            background-image: url('/static/images/register\ image.jpg'); 
+            background-size: cover;
+            background-position: center;
+            min-height: 550px; /* Ensure panel is visible on desktop */
+            position: relative;
+        }
+        .promo-overlay {
+            background: rgba(0, 0, 0, 0.4); /* Dark Overlay for text contrast */
+            padding: 3rem;
+            border-radius: 1rem 0 0 1rem;
+        }
+    </style>
+</head>
+<body class="bg-light-gray text-gray-800">
+    
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-dark shadow-md">
+        <div class="container max-w-7xl">
+            <a class="navbar-brand font-bold" href="{{ url_for('index') }}"><i class="fas fa-clipboard-check me-2"></i>SLMS</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 space-x-2">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
+                    <li class="nav-item">
+                        <a class="btn btn-sm btn-outline-light rounded-pill px-3" href="{{ url_for('login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Log In
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content: Informative Split Layout -->
+    <div class="container d-flex justify-content-center align-items-center py-5 min-vh-100">
+        <div class="row w-full max-w-5xl bg-white rounded-xl shadow-2xl overflow-hidden">
+            
+            <!-- Left Panel: Value Proposition with Background Image -->
+            <div class="col-md-5 d-none d-md-flex promo-panel">
+                <div class="promo-overlay d-flex flex-column justify-content-center h-full w-full text-white">
+                    <div class="text-center">
+                        <i class="fas fa-shield-alt fa-4x mb-3 text-green-300"></i>
+                        <h3 class="text-2xl font-bold mb-3">Secure Access, Policy-Driven</h3>
+                        <p class="text-sm">Register your account to gain secure access to the automated leave management system. All accounts require mandatory email verification.</p>
+                        <ul class="list-unstyled text-sm mt-4 text-left mx-auto max-w-xs space-y-2">
+                            <li><i class="fas fa-check-circle me-2 text-green-300"></i> Enforced Leave Limits</li>
+                            <li><i class="fas fa-check-circle me-2 text-green-300"></i> Departmental Linkage</li>
+                            <li><i class="fas fa-check-circle me-2 text-green-300"></i> Time-Based Alerts Active</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Signup Form -->
+            <div class="col-md-7 p-6 md:p-8">
+                <h2 class="text-center mb-4 text-3xl font-bold text-primary-dark">Create an Account</h2>
+                <p class="text-center text-secondary-dark mb-4">Register your account and start the email verification process.</p>
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('signup') }}" method="post">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label fw-semibold">First Name</label>
+                            <input type="text" class="form-control rounded-3" id="first_name" name="first_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="second_name" class="form-label fw-semibold">Second Name</label>
+                            <input type="text" class="form-control rounded-3" id="second_name" name="second_name" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold">Email (Verification Required)</label>
+                        <input type="email" class="form-control rounded-3" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="college_id" class="form-label fw-semibold">College ID</label>
+                        <input type="text" class="form-control rounded-3" id="college_id" name="college_id" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="branch" class="form-label fw-semibold">Branch (Department)</label>
+                            <select class="form-select rounded-3" id="branch" name="branch" required>
+                                <option value="MCA">MCA</option>
+                                <option value="MBA">MBA</option>
+                                <option value="CSE">CSE</option>
+                                <option value="ECE">ECE</option>
+                                <option value="MECH">MECH</option>
+                                <option value="CIVIL">CIVIL</option>
+                                <option value="EEE">EEE</option>
+                                <option value="Global">Global (Admin Use)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="role" class="form-label fw-semibold">Role</label>
+                            <select class="form-select rounded-3" id="role" name="role" required>
+                                <option value="student">Student</option>
+                                <option value="cr">CR</option>
+                                <option value="faculty">Faculty</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label fw-semibold">Password</label>
+                        <input type="password" class="form-control rounded-3" id="password" name="password" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="confirm_password" class="form-label fw-semibold">Confirm Password</label>
+                        <input type="password" class="form-control rounded-3" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-md"><i class="fas fa-user-plus me-2"></i> Sign Up</button>
+                </form>
+                <p class="text-center mt-4 text-sm">Already have an account? <a href="{{ url_for('login') }}" class="text-primary-dark hover:text-primary-light transition font-semibold">Login here</a></p>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
