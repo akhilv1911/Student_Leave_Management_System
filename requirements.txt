@@ -1,5 +1,0 @@
-Flask
-itsdangerous
-Flask-Mail
-APScheduler
-werkzeug
